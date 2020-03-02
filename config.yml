@@ -21,11 +21,11 @@
   - apiVersion: v1
     kind: DeploymentConfig
     metadata:
-      name: '${DATABASE_SERVICE_NAME}'
+      name: 'mysql'
     spec:
       replicas: 1
       selector:
-        name: '${DATABASE_SERVICE_NAME}'
+        name: 'mysql
       strategy:
         recreateParams:
           post:
@@ -35,18 +35,18 @@
                 - '-c'
                 - >-
                   hostname && sleep 10 && /usr/bin/mysql -h
-                  $DATABASE_SERVICE_NAME -u $MYSQL_USER -D $MYSQL_DATABASE
-                  -p$MYSQL_PASSWORD -P 3306 <
+                  mysql -ukeycloak -Dkeycloak
+                  -pkeycloak -P 3306 <
                   /docker-entrypoint-initdb.d/init.sql && echo Initialized
                   database;
                   hostname && sleep 10 && /usr/bin/mysql -h
-                  $DATABASE_SERVICE_NAME -uroot -p$MYSQL_ROOT_PASSWORD -P 3306 <
+                  mysql -uroot -proot -P 3306 <
                   /docker-entrypoint-initdb1.d/init.sql && echo Initialized
                   
               containerName: mysql
               env:
                 - name: DATABASE_SERVICE_NAME
-                  value: '${DATABASE_SERVICE_NAME}'
+                  value: 'mysql'
               volumes:
                 - mysql-init-script
                 - mysql-init-script1
@@ -55,7 +55,7 @@
       template:
         metadata:
           labels:
-            name: '${DATABASE_SERVICE_NAME}'
+            name: 'mysql'
         spec:
           containers:
             - env:
@@ -63,20 +63,20 @@
                   valueFrom:
                     secretKeyRef:
                       key: database-user
-                      name: '${DATABASE_SERVICE_NAME}'
+                      name: 'mysql'
                 - name: MYSQL_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       key: database-password
-                      name: '${DATABASE_SERVICE_NAME}'
+                      name: 'mysql'
                 - name: MYSQL_ROOT_PASSWORD
                   valueFrom:
                     secretKeyRef:
                       key: database-root-password
-                      name: '${DATABASE_SERVICE_NAME}'
+                      name: 'mysql'
                 - name: MYSQL_DATABASE
-                  value: '${MYSQL_DATABASE}'
-              image: 'mysql:${MYSQL_VERSION}'
+                  value: 'keycloak'
+              image: 'mysql:latest'
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 initialDelaySeconds: 60
@@ -93,16 +93,16 @@
                     - '-i'
                     - '-c'
                     - >-
-                      MYSQL_PWD="$MYSQL_PASSWORD" mysql -h 127.0.0.1 -u
-                      $MYSQL_USER -D $MYSQL_DATABASE -e 'SELECT 1'
+                      MYSQL_PWD="keycloak" mysql -h 127.0.0.1 -u
+                      keycloak -D keycloak -e 'SELECT 1'
                 initialDelaySeconds: 5
                 timeoutSeconds: 1
               resources:
                 limits:
-                  memory: '${MEMORY_LIMIT}'
+                  memory: ' 512Mi'
               volumeMounts:
-                - mountPath: '/var/lib/${NAMESPACE}/new/data'
-                  name: '${DATABASE_SERVICE_NAME}-data'
+                - mountPath: '/var/lib/myproject/new/data'
+                  name: 'mysql-data'
                 - mountPath: /docker-entrypoint-initdb.d/
                   name: mysql-init-script
                 - mountPath: /docker-entrypoint-initdb1.d/
@@ -110,7 +110,7 @@
                 - mountPath: /etc/mysql/conf.d/
                   name: mysql-confd
           volumes:
-            - name: '${DATABASE_SERVICE_NAME}-data'
+            - name: 'mysql-data'
               persistentVolumeClaim:
                 claimName: mysql-pv1-claim
             - configMap:
